@@ -8,7 +8,7 @@ using namespace std;
 
 unsigned int hash(const GeoCoord& g)
 {
-    return hash<string>()(g.latitudeText + g.longitudeText);
+    return std::hash<string>()(g.latitudeText + g.longitudeText);
 }
 
 class StreetMapImpl
