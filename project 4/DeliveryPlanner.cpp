@@ -45,8 +45,13 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     list<StreetSegment> route;
     double temp;
     commands.clear();
-    for (int i = 0; i < optimizedDel.size(); i++) {
-        DeliveryResult r = m_router->generatePointToPointRoute(cur, optimizedDel[i].location, route, temp);
+    for (int i = 0; i <= optimizedDel.size(); i++) {
+        DeliveryResult r;
+        if(i==optimizedDel.size()){
+            r = m_router->generatePointToPointRoute(cur, depot, route, temp);
+        }else{
+            r = m_router->generatePointToPointRoute(cur, optimizedDel[i].location, route, temp);
+        }
         if(r==BAD_COORD||r==NO_ROUTE)return r;
         totalDistance += temp;
         auto it = route.begin();
@@ -68,7 +73,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
             dc.initAsProceedCommand(direction, streetName, 0);
             while (it->name==streetName&&it!=route.end()) {
                 dc.increaseDistance(distanceEarthMiles(it->start, it->end));
-                if(optimizedDel[i].location==it->end){
+                if(i!=optimizedDel.size()&& optimizedDel[i].location==it->end){
                     DeliveryCommand d;
                     d.initAsDeliverCommand(optimizedDel[i].item);
                     commands.push_back(d);
@@ -87,46 +92,10 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
                 commands.push_back(dc);
             }
         }
-        cur = optimizedDel[i].location;
+        if(i!=optimizedDel.size())
+            cur = optimizedDel[i].location;
     }
-    DeliveryResult r = m_router->generatePointToPointRoute(cur, depot, route, temp);
-    if(r==BAD_COORD||r==NO_ROUTE)return r;
-    
-    totalDistance+=temp;
     totalDistanceTravelled = totalDistance;
-    auto it = route.begin();
-    while (it!=route.end()) {
-        StreetSegment start = *it;
-        string streetName = it->name;
-        double angle = angleOfLine(*it);
-        string direction;
-        if(angle < 22.5) direction = "east";
-        else if (angle < 67.5) direction = "northeast";
-        else if (angle < 112.5) direction = "north";
-        else if (angle < 157.5) direction = "northwest";
-        else if (angle < 202.5) direction = "west";
-        else if (angle < 247.5) direction = "southwest";
-        else if (angle < 292.5) direction = "south";
-        else if (angle < 337.5) direction = "southeast";
-        else direction = "east";
-        DeliveryCommand dc;
-        dc.initAsProceedCommand(direction, streetName, 0);
-        while (it->name==streetName&&it!=route.end()) {
-            dc.increaseDistance(distanceEarthMiles(it->start, it->end));
-            it++;
-        }
-        commands.push_back(dc);
-        if(it==route.end())break;
-        double turn = angleBetween2Lines(*it, start);
-        if(turn>=1 && turn <=180){
-            dc.initAsTurnCommand("left", it->name);
-            commands.push_back(dc);
-        }
-        else if (turn >=180 && turn <=359){
-            dc.initAsTurnCommand("right", it->name);
-            commands.push_back(dc);
-        }
-    }
     return DELIVERY_SUCCESS;  
 }
 

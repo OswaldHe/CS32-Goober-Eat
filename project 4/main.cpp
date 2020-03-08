@@ -1,60 +1,102 @@
-#include <iostream>
-#include <list>
-#include <functional>
-#include "ExpandableHashMap.h"
 #include "provided.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 using namespace std;
 
-int main(int argc, const char * argv[]) {
-    StreetMap m;
-    m.load("/Users/admin/Desktop/20Q2/CS\ 32\ projects/project\ 4/project\ 4/mapdata.txt");
-    GeoCoord p("34.0547000" , "-118.4794734"); // 10th Helena Drive
-    GeoCoord q("34.0549825" , "-118.4795629"); //11 th
-    GeoCoord r("34.0734335" , "-118.4449143"); //westwood 1
-    GeoCoord w("34.0670755" , "-118.4451231"); //westwood 2
-    GeoCoord e("34.0668846", "-118.4450991"); //westwood 3
-    GeoCoord f("34.0558289" , "-118.4798296"); // 13th helena
-    GeoCoord h("34.0794007", "-118.3923975");
+bool loadDeliveryRequests(string deliveriesFile, GeoCoord& depot, vector<DeliveryRequest>& v);
+bool parseDelivery(string line, string& lat, string& lon, string& item);
 
-    list<StreetSegment> route;
-    double distanceTravelled = 0.0;
-    vector<StreetSegment> s;
-    bool b = m.getSegmentsThatStartWith(p, s);
-    if(b) cout << s[0].end.latitudeText<<" "<< s[0].end.longitudeText<< endl;
-    PointToPointRouter router(&m);
-    router.generatePointToPointRoute(q, p, route, distanceTravelled);
-//    for(auto it = route.begin(); it!=route.end(); it++){
-//        cout << it->name << endl;
-//    }
-    cout << distanceTravelled << endl;
-    
-    DeliveryOptimizer del(&m);
-    double oldDis, newDis;
-    DeliveryRequest x("Chicken", q); // 1
-    DeliveryRequest y("beer", r); //2
-    DeliveryRequest z("pizza", w); //2
-    DeliveryRequest a("burger", e); //2
-    DeliveryRequest c("haha", f); //1
-    DeliveryRequest d("xxx", h);
-
-    
-    vector<DeliveryRequest> deli;
-    deli.push_back(a);
-    deli.push_back(z);
-    deli.push_back(x);
-    deli.push_back(y);
-    deli.push_back(c);
-    deli.push_back(d);
-    del.optimizeDeliveryOrder(p, deli, oldDis, newDis);
-    cout << oldDis << " "<< newDis <<" " << deli.size()<< endl;
-    cout << deli[0].item << " " << deli[1].item << " " << deli[2].item << " " << deli[3].item << " " << deli[4].item <<" "<<deli[5].item<<endl;
-    
-    vector<DeliveryCommand> dc;
-    DeliveryPlanner dp(&m);
-    dp.generateDeliveryPlan(p, deli, dc, distanceTravelled);
-    cout << distanceTravelled << endl;
-    for(int i = 0; i < dc.size(); i++){
-        cout << dc[i].description() << endl;
+int main(int argc, char *argv[])
+{
+    if (argc != 3)
+    {
+        cout << "Usage: " << argv[0] << " mapdata.txt deliveries.txt" << endl;
+        return 1;
     }
-    
+
+    StreetMap sm;
+        
+    if (!sm.load(argv[1]))
+    {
+        cout << "Unable to load map data file " << argv[1] << endl;
+        return 1;
+    }
+
+    GeoCoord depot;
+    vector<DeliveryRequest> deliveries;
+    if (!loadDeliveryRequests(argv[2], depot, deliveries))
+    {
+        cout << "Unable to load delivery request file " << argv[2] << endl;
+        return 1;
+    }
+
+    cout << "Generating route...\n\n";
+
+    DeliveryPlanner dp(&sm);
+    vector<DeliveryCommand> dcs;
+    double totalMiles;
+    DeliveryResult result = dp.generateDeliveryPlan(depot, deliveries, dcs, totalMiles);
+    if (result == BAD_COORD)
+    {
+        cout << "One or more depot or delivery coordinates are invalid." << endl;
+        return 1;
+    }
+    if (result == NO_ROUTE)
+    {
+        cout << "No route can be found to deliver all items." << endl;
+        return 1;
+    }
+    cout << "Starting at the depot...\n";
+    for (const auto& dc : dcs)
+        cout << dc.description() << endl;
+    cout << "You are back at the depot and your deliveries are done!\n";
+    cout.setf(ios::fixed);
+    cout.precision(2);
+    cout << totalMiles << " miles travelled for all deliveries." << endl;
+}
+
+bool loadDeliveryRequests(string deliveriesFile, GeoCoord& depot, vector<DeliveryRequest>& v)
+{
+    ifstream inf(deliveriesFile);
+    if (!inf)
+        return false;
+    string lat;
+    string lon;
+    inf >> lat >> lon;
+    inf.ignore(10000, '\n');
+    depot = GeoCoord(lat, lon);
+    string line;
+    while (getline(inf, line))
+    {
+        string item;
+        if (parseDelivery(line, lat, lon, item))
+            v.push_back(DeliveryRequest(item, GeoCoord(lat, lon)));
+    }
+    return true;
+}
+
+bool parseDelivery(string line, string& lat, string& lon, string& item)
+{
+    const size_t colon = line.find(':');
+    if (colon == string::npos)
+    {
+        cout << "Missing colon in deliveries file line: " << line << endl;
+        return false;
+    }
+    istringstream iss(line.substr(0, colon));
+    if (!(iss >> lat >> lon))
+    {
+        cout << "Bad format in deliveries file line: " << line << endl;
+        return false;
+    }
+    item = line.substr(colon + 1);
+    if (item.empty())
+    {
+        cout << "Missing item in deliveries file line: " << line << endl;
+        return false;
+    }
+    return true;
 }
