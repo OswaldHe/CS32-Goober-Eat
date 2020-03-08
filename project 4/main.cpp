@@ -7,13 +7,14 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
     StreetMap m;
-    m.load("/Users/admin/Desktop/20Q2/CS\ 32\ projects/skeleton/mapdata.txt");
+    m.load("/Users/admin/Desktop/20Q2/CS\ 32\ projects/project\ 4/project\ 4/mapdata.txt");
     GeoCoord p("34.0547000" , "-118.4794734"); // 10th Helena Drive
     GeoCoord q("34.0549825" , "-118.4795629"); //11 th
     GeoCoord r("34.0734335" , "-118.4449143"); //westwood 1
     GeoCoord w("34.0670755" , "-118.4451231"); //westwood 2
     GeoCoord e("34.0668846", "-118.4450991"); //westwood 3
     GeoCoord f("34.0558289" , "-118.4798296"); // 13th helena
+    GeoCoord h("34.0794007", "-118.3923975");
 
     list<StreetSegment> route;
     double distanceTravelled = 0.0;
@@ -34,6 +35,7 @@ int main(int argc, const char * argv[]) {
     DeliveryRequest z("pizza", w); //2
     DeliveryRequest a("burger", e); //2
     DeliveryRequest c("haha", f); //1
+    DeliveryRequest d("xxx", h);
 
     
     vector<DeliveryRequest> deli;
@@ -42,9 +44,10 @@ int main(int argc, const char * argv[]) {
     deli.push_back(x);
     deli.push_back(y);
     deli.push_back(c);
+    deli.push_back(d);
     del.optimizeDeliveryOrder(p, deli, oldDis, newDis);
     cout << oldDis << " "<< newDis <<" " << deli.size()<< endl;
-    cout << deli[0].item << " " << deli[1].item << " " << deli[2].item << " " << deli[3].item << " " << deli[4].item <<endl;
+    cout << deli[0].item << " " << deli[1].item << " " << deli[2].item << " " << deli[3].item << " " << deli[4].item <<" "<<deli[5].item<<endl;
     
     vector<DeliveryCommand> dc;
     DeliveryPlanner dp(&m);

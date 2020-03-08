@@ -1,5 +1,7 @@
 #include "provided.h"
 #include <vector>
+#include <time.h>
+#include <cmath>
 using namespace std;
 
 class DeliveryOptimizerImpl
@@ -19,7 +21,19 @@ private:
         DeliveryRequest m_d;
         bool m_visited;
     };
-    vector<DeliveryRequest> bestPath(DeliveryRequest start, DeliveryRequest end, vector<Node*> old, double& path) const;
+    
+    double CalculatePathDis(vector<DeliveryRequest> potentialSol, const GeoCoord& start) const{
+        double length = 0.0; //initialize path distance
+        
+        length += distanceEarthMiles(start, potentialSol[0].location)
+        + distanceEarthMiles(start, (potentialSol.end()-1)->location);
+        
+        for (int i = 0; i < potentialSol.size()-1; i++) {
+            length += distanceEarthMiles(potentialSol[i].location, potentialSol[i+1].location);
+        }
+        
+        return length;
+    }
 };
 
 DeliveryOptimizerImpl::DeliveryOptimizerImpl(const StreetMap* sm)
@@ -31,72 +45,92 @@ DeliveryOptimizerImpl::~DeliveryOptimizerImpl()
 {
 }
 
+/*
+ Travelling Saleman Problem: NP hard
+ Exact optimization: BFS -- O(N!)
+ Attempt: Simulated Annealing Approximation
+ */
 void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     const GeoCoord& depot,
     vector<DeliveryRequest>& deliveries,
     double& oldCrowDistance,
     double& newCrowDistance) const
 {
-    GeoCoord cur = depot;
-    oldCrowDistance = 0;
-    vector<Node*> nodes;
-    for (int i = 0; i < deliveries.size(); i++) {
-        oldCrowDistance+=distanceEarthMiles(cur, deliveries[i].location);
-        nodes.push_back(new Node(deliveries[i], false));
-        cur = deliveries[i].location;
-    }
-    oldCrowDistance+=distanceEarthMiles(depot, cur);
-    //nodes.push_back(new Node(deliveries[deliveries.size()-1], false));
-    double shortestPath;
-    DeliveryRequest del("starting",depot);
-    nodes.push_back(new Node(del, false));
-    deliveries = bestPath(del, del, nodes, shortestPath);
-    deliveries.erase(deliveries.begin());
-    deliveries.erase(deliveries.end()-1);
-    newCrowDistance = shortestPath;
-}
-
-vector<DeliveryRequest> DeliveryOptimizerImpl::bestPath(DeliveryRequest start, DeliveryRequest end, vector<Node*> old, double& path) const{
-    vector<DeliveryRequest> v;
-    bool allVisit = true;
-    v.push_back(start);
-    for(int i = 0; i < old.size(); i++){
-//        if(old[i]->m_d.location == start.location){
-//            old[i]->m_visited = true;
-//            continue;
-//        }
-        if(!old[i]->m_visited) {
-            allVisit = false;
-            break;
+    oldCrowDistance = CalculatePathDis(deliveries, depot);
+    
+    srand((unsigned)time(nullptr));
+    double t_init = 30000.0; //initial temperature
+    double t_end = 1e-8; //final temperature: annealing finished
+    double q = 0.95; //annealing coefficient
+    size_t size = deliveries.size();
+    int link = pow(size, 2); //repeating size for each temperature
+    
+    vector<DeliveryRequest> original;// original solution
+    vector<DeliveryRequest> newSol = deliveries; // potential new solution
+    double length1, length2, dl; //difference between path distance
+    double r; // random number to decide whether keep the original solution
+    while (t_init > t_end) {
+        for(int i = 0; i < link; i++){
+            original = newSol;
+            double r1 = ((double)rand())/(RAND_MAX+1.0);
+            double r2 = ((double)rand())/(RAND_MAX+1.0);
+            int a = (int)(size*r1);
+            int b = (int)(size*r2);
+            swap(newSol[a], newSol[b]);
+            length1 = CalculatePathDis(original, depot);
+            length2 = CalculatePathDis(newSol, depot);
+            dl = length2 - length1;
+            if(dl >= 0){
+                r = ((double)rand())/(RAND_MAX);
+                if(exp(-dl/t_init) <= r){ //keep original
+                    newSol = original;
+                }
+            }
         }
+        t_init*=q; //annealing
     }
     
-    if(allVisit){
-        path = distanceEarthMiles(end.location, start.location);
-        return v;
-    }
-    double length = 100000000;
-//    int index = 0;
-
-    for(int i = 0; i < old.size(); i++){
-        double temp = 0;
-        if(old[i]->m_d.location!=start.location&&old[i]->m_visited==false){
-            old[i]->m_visited = true;
-            vector<DeliveryRequest> t = bestPath(old[i]->m_d, end, old, temp);
-            temp+=distanceEarthMiles(start.location, old[i]->m_d.location);
-            if(length > temp) {
-                length = temp;
-                v = t;
-            }
-            old[i]->m_visited = false;
-        }
-    }
-    path = length;
-//    old[index]->m_visited = true;
-//    v = bestPath(old[index]->m_d, end, old, length);
-    v.insert(v.begin(), start);
-    return v;
+    deliveries = newSol;
+    newCrowDistance = CalculatePathDis(deliveries, depot);
 }
+
+/*
+ Originally for exact optimization
+ */
+//vector<DeliveryRequest> DeliveryOptimizerImpl::bestPath(DeliveryRequest start, DeliveryRequest end, vector<Node*> old, double& path) const{
+//    vector<DeliveryRequest> v;
+//    bool allVisit = true;
+//    v.push_back(start);
+//    for(int i = 0; i < old.size(); i++){
+//        if(!old[i]->m_visited) {
+//            allVisit = false;
+//            break;
+//        }
+//    }
+//
+//    if(allVisit){
+//        path = distanceEarthMiles(end.location, start.location);
+//        return v;
+//    }
+//    double length = 100000000;
+//
+//    for(int i = 0; i < old.size(); i++){
+//        double temp = 0;
+//        if(old[i]->m_d.location!=start.location&&old[i]->m_visited==false){
+//            old[i]->m_visited = true;
+//            vector<DeliveryRequest> t = bestPath(old[i]->m_d, end, old, temp);
+//            temp+=distanceEarthMiles(start.location, old[i]->m_d.location);
+//            if(length > temp) {
+//                length = temp;
+//                v = t;
+//            }
+//            old[i]->m_visited = false;
+//        }
+//    }
+//    path = length;
+//    v.insert(v.begin(), start);
+//    return v;
+//}
 
 //******************** DeliveryOptimizer functions ****************************
 
