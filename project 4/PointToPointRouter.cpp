@@ -1,6 +1,5 @@
 #include "provided.h"
 #include <list>
-#include <set>
 #include <map>
 using namespace std;
 
@@ -49,7 +48,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(const GeoCoord&
     bool found = false;
     map<GeoCoord, Loc*> openList;
     map<GeoCoord, Loc*> closedList;
-    openList[start] =  new Loc(start, distanceEarthKM(start, end), 0, distanceEarthKM(start, end));;
+    openList[start] =  new Loc(start, distanceEarthMiles(start, end), 0, distanceEarthMiles(start, end));;
     Loc* cur;
     while(openList.size()!=0){
         cur = openList.begin()->second;
@@ -67,7 +66,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(const GeoCoord&
         m_streetMap->getSegmentsThatStartWith(cur->location, segs);
         for(int i = 0; i < segs.size(); i++){
             GeoCoord landmark = segs[i].end;
-            double currentCost = cur->m_g+distanceEarthKM(cur->location, landmark);
+            double currentCost = cur->m_g+distanceEarthMiles(cur->location, landmark);
             if(openList.find(landmark)!=openList.end()){
                 Loc* t = openList[landmark];
                 if(t->m_g<=currentCost)continue;
@@ -78,7 +77,7 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(const GeoCoord&
                 auto it = closedList.find(landmark);
                 closedList.erase(it);
             }else{
-                double h = distanceEarthKM(landmark, end);
+                double h = distanceEarthMiles(landmark, end);
                 Loc* t = new Loc(landmark, h, 0, h);
                 openList[landmark] = t;
             }

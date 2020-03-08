@@ -6,7 +6,7 @@
 #include <fstream>
 using namespace std;
 
-unsigned int hash(const GeoCoord& g)
+unsigned int hasher(const GeoCoord& g)
 {
     return std::hash<string>()(g.latitudeText + g.longitudeText);
 }
@@ -24,7 +24,7 @@ private:
 
 StreetMapImpl::StreetMapImpl()
 {
-    m_map = new ExpandableHashMap<GeoCoord, vector<StreetSegment>>();
+    m_map = new ExpandableHashMap<GeoCoord, vector<StreetSegment>>;
 }
 
 StreetMapImpl::~StreetMapImpl()

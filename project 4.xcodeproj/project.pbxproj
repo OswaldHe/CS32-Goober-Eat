@@ -10,6 +10,7 @@
 		8405FAF924133963003F99D1 /* PointToPointRouter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8405FAF824133963003F99D1 /* PointToPointRouter.cpp */; };
 		848D87042412154900E7E348 /* StreetMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 848D87032412154900E7E348 /* StreetMap.cpp */; };
 		849839E7241029CB0093CEDC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 849839E6241029CB0093CEDC /* main.cpp */; };
+		849846282414282600D843CB /* DeliveryOptimizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 849846272414282600D843CB /* DeliveryOptimizer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +32,7 @@
 		849839E6241029CB0093CEDC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		849839ED241029EA0093CEDC /* ExpandableHashMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExpandableHashMap.h; sourceTree = "<group>"; };
 		849839EE2410387E0093CEDC /* provided.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = provided.h; sourceTree = "<group>"; };
+		849846272414282600D843CB /* DeliveryOptimizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DeliveryOptimizer.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 				849839EE2410387E0093CEDC /* provided.h */,
 				848D87032412154900E7E348 /* StreetMap.cpp */,
 				8405FAF824133963003F99D1 /* PointToPointRouter.cpp */,
+				849846272414282600D843CB /* DeliveryOptimizer.cpp */,
 			);
 			path = "project 4";
 			sourceTree = "<group>";
@@ -130,6 +133,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				849839E7241029CB0093CEDC /* main.cpp in Sources */,
+				849846282414282600D843CB /* DeliveryOptimizer.cpp in Sources */,
 				848D87042412154900E7E348 /* StreetMap.cpp in Sources */,
 				8405FAF924133963003F99D1 /* PointToPointRouter.cpp in Sources */,
 			);

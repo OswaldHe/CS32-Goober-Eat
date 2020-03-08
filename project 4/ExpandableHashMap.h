@@ -40,8 +40,8 @@ private:
     int m_size;
     
     unsigned int getBucketNumber(const KeyType& key) const{
-        unsigned int hash(const KeyType& key);
-        return hash(key) % numBucket;
+        unsigned int hasher(const KeyType& key);
+        return hasher(key) % numBucket;
     }
 };
 
@@ -85,7 +85,7 @@ void ExpandableHashMap<KeyType, ValueType>::associate(const KeyType& key, const 
             if(m_list[i].size()!=0){
                 typename std::list<Pair>::iterator it = m_list[i].begin();
                 typename std::list<Pair>::iterator temp;
-                for(; it!=m_list[i].end();it++){
+                for(; it!=m_list[i].end();){
                     unsigned int index = getBucketNumber((*it).key);
                     temp = it;
                     it++;
