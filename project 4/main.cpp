@@ -45,4 +45,13 @@ int main(int argc, const char * argv[]) {
     del.optimizeDeliveryOrder(p, deli, oldDis, newDis);
     cout << oldDis << " "<< newDis <<" " << deli.size()<< endl;
     cout << deli[0].item << " " << deli[1].item << " " << deli[2].item << " " << deli[3].item << " " << deli[4].item <<endl;
+    
+    vector<DeliveryCommand> dc;
+    DeliveryPlanner dp(&m);
+    dp.generateDeliveryPlan(p, deli, dc, distanceTravelled);
+    cout << distanceTravelled << endl;
+    for(int i = 0; i < dc.size(); i++){
+        cout << dc[i].description() << endl;
+    }
+    
 }
