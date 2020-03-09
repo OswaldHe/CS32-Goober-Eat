@@ -22,6 +22,11 @@ private:
         bool m_visited;
     };
     
+    /*
+     This function calculate the overall crow distance for a specific order
+     of delivery requests, from the starting point and back to the starting
+     point.
+     */
     double CalculatePathDis(vector<DeliveryRequest> potentialSol, const GeoCoord& start) const{
         double length = 0.0; //initialize path distance
         
@@ -72,6 +77,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     while (t_init > t_end) {
         for(int i = 0; i < link; i++){
             original = newSol;
+            //random numbers for swaping
             double r1 = ((double)rand())/(RAND_MAX+1.0);
             double r2 = ((double)rand())/(RAND_MAX+1.0);
             int a = (int)(size*r1);
@@ -80,7 +86,7 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
             length1 = CalculatePathDis(original, depot);
             length2 = CalculatePathDis(newSol, depot);
             dl = length2 - length1;
-            if(dl >= 0){
+            if(dl >= 0){//if the new path is longer
                 r = ((double)rand())/(RAND_MAX);
                 if(exp(-dl/t_init) <= r){ //keep original
                     newSol = original;
@@ -93,44 +99,6 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     deliveries = newSol;
     newCrowDistance = CalculatePathDis(deliveries, depot);
 }
-
-/*
- Originally for exact optimization
- */
-//vector<DeliveryRequest> DeliveryOptimizerImpl::bestPath(DeliveryRequest start, DeliveryRequest end, vector<Node*> old, double& path) const{
-//    vector<DeliveryRequest> v;
-//    bool allVisit = true;
-//    v.push_back(start);
-//    for(int i = 0; i < old.size(); i++){
-//        if(!old[i]->m_visited) {
-//            allVisit = false;
-//            break;
-//        }
-//    }
-//
-//    if(allVisit){
-//        path = distanceEarthMiles(end.location, start.location);
-//        return v;
-//    }
-//    double length = 100000000;
-//
-//    for(int i = 0; i < old.size(); i++){
-//        double temp = 0;
-//        if(old[i]->m_d.location!=start.location&&old[i]->m_visited==false){
-//            old[i]->m_visited = true;
-//            vector<DeliveryRequest> t = bestPath(old[i]->m_d, end, old, temp);
-//            temp+=distanceEarthMiles(start.location, old[i]->m_d.location);
-//            if(length > temp) {
-//                length = temp;
-//                v = t;
-//            }
-//            old[i]->m_visited = false;
-//        }
-//    }
-//    path = length;
-//    v.insert(v.begin(), start);
-//    return v;
-//}
 
 //******************** DeliveryOptimizer functions ****************************
 

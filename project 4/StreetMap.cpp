@@ -41,11 +41,11 @@ bool StreetMapImpl::load(string mapFile)
     }
     string line;
     while(getline(mapData, line)){
-        string name = line;
+        string name = line; //street name
         getline(mapData, line);
-        int num = stoi(line);
+        int num = stoi(line); // number of street segment the street has
         for(int i = 0; i < num; i++){
-            string coord[4];
+            string coord[4]; // start and end geocoord for one segment
             getline(mapData, coord[0], ' ');
             getline(mapData, coord[1], ' ');
             getline(mapData, coord[2], ' ');
@@ -54,14 +54,16 @@ bool StreetMapImpl::load(string mapFile)
             GeoCoord end(coord[2], coord[3]);
             StreetSegment forward(start, end, name);
             StreetSegment reverse(end, start, name);
+            //push the segment into hash map
             vector<StreetSegment>* v = m_map->find(start);
-            if(v){
+            if(v){ // if the geocoord is in the map, push the segment
                 v->push_back(forward);
-            }else{
+            }else{//create a new vector for this geocoord
                 vector<StreetSegment> segments;
                 segments.push_back(forward);
                 m_map->associate(start, segments);
             }
+            //push the reverse segment into hash map
             v = m_map->find(end);
             if (v) {
                 v->push_back(reverse);

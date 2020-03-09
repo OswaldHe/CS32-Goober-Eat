@@ -40,6 +40,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     vector<DeliveryRequest> optimizedDel = deliveries;
     double oldDis, newDis;
     double totalDistance = 0;
+    //generate optimized order for delivery
     m_optimizer->optimizeDeliveryOrder(depot, optimizedDel, oldDis, newDis);
     GeoCoord cur = depot;
     list<StreetSegment> route;
@@ -47,15 +48,18 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
     commands.clear();
     for (int i = 0; i <= optimizedDel.size(); i++) {
         DeliveryResult r;
-        if(i==optimizedDel.size()){
+        if(i==optimizedDel.size()){ //move back to depot
             r = m_router->generatePointToPointRoute(cur, depot, route, temp);
-        }else{
+        }else{//delivering
             r = m_router->generatePointToPointRoute(cur, optimizedDel[i].location, route, temp);
         }
         if(r==BAD_COORD||r==NO_ROUTE)return r;
         totalDistance += temp;
         auto it = route.begin();
         while (it!=route.end()) {
+            /*
+             Generate delivery command for each street
+             */
             StreetSegment start = *it;
             string streetName = it->name;
             double angle = angleOfLine(*it);
@@ -71,17 +75,29 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
             else direction = "east";
             DeliveryCommand dc;
             dc.initAsProceedCommand(direction, streetName, 0);
+            double isDelivery = false;
+            //track the length of a street
             while (it!=route.end()&&it->name==streetName) {
                 dc.increaseDistance(distanceEarthMiles(it->start, it->end));
+                // if there is a delivery in this street
+                // push the proceed command, then delivery command, then continue to next loop
                 if(i!=optimizedDel.size()&& optimizedDel[i].location==it->end){
                     DeliveryCommand d;
                     d.initAsDeliverCommand(optimizedDel[i].item);
+                    commands.push_back(dc);
                     commands.push_back(d);
+                    isDelivery = true;
+                    it++;
+                    break;
                 }
                 it++;
             }
+            if (isDelivery) {
+                continue;
+            }
             commands.push_back(dc);
             if(it==route.end())break;
+            // check whether to turn
             double turn = angleBetween2Lines(*it, start);
             if(turn>=1 && turn <=180){
                 dc.initAsTurnCommand("left", it->name);
