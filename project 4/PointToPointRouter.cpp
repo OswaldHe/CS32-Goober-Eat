@@ -37,6 +37,7 @@ PointToPointRouterImpl::~PointToPointRouterImpl()
 }
 
 DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(const GeoCoord& start, const GeoCoord& end, list<StreetSegment>& route, double& totalDistanceTravelled) const{
+    route.clear();
     vector<StreetSegment> v;
     if (!m_streetMap->getSegmentsThatStartWith(start, v)) {
         return BAD_COORD;

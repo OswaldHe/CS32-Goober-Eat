@@ -71,7 +71,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
             else direction = "east";
             DeliveryCommand dc;
             dc.initAsProceedCommand(direction, streetName, 0);
-            while (it->name==streetName&&it!=route.end()) {
+            while (it!=route.end()&&it->name==streetName) {
                 dc.increaseDistance(distanceEarthMiles(it->start, it->end));
                 if(i!=optimizedDel.size()&& optimizedDel[i].location==it->end){
                     DeliveryCommand d;
