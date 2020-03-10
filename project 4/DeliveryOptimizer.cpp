@@ -64,10 +64,10 @@ void DeliveryOptimizerImpl::optimizeDeliveryOrder(
     oldCrowDistance = CalculatePathDis(deliveries, depot);
     
     srand((unsigned)time(nullptr));
-    double t_init = 10000.0; //initial temperature
-    double t_end = 1e-8; //final temperature: annealing finished
-    double q = 0.95; //annealing coefficient
     size_t size = deliveries.size();
+    double t_init = size * 1300; //initial temperature
+    double t_end = 1e-8; //final temperature: annealing finished
+    double q = 0.97; //annealing coefficient
     int link = pow(size, 2); //repeating size for each temperature
     
     vector<DeliveryRequest> original;// original solution

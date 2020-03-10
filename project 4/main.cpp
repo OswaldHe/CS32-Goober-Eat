@@ -11,6 +11,8 @@ bool parseDelivery(string line, string& lat, string& lon, string& item);
 
 int main(int argc, char *argv[])
 {
+    clock_t start,end;
+    start = clock();
     if (argc != 3)
     {
         cout << "Usage: " << argv[0] << " mapdata.txt deliveries.txt" << endl;
@@ -56,6 +58,9 @@ int main(int argc, char *argv[])
     cout.setf(ios::fixed);
     cout.precision(2);
     cout << totalMiles << " miles travelled for all deliveries." << endl;
+    
+    end = clock();
+    cout<< "Time used : " << (double)(end-start)/CLOCKS_PER_SEC << endl;
 }
 
 bool loadDeliveryRequests(string deliveriesFile, GeoCoord& depot, vector<DeliveryRequest>& v)

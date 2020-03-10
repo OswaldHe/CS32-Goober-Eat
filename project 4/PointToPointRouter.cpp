@@ -127,7 +127,13 @@ DeliveryResult PointToPointRouterImpl::generatePointToPointRoute(const GeoCoord&
         
         return DELIVERY_SUCCESS;
     }
-    return NO_ROUTE;  // Delete this line and implement this function correctly
+    for(auto it = openList.begin(); it!=openList.end(); it++){
+        delete it->second;
+    }
+    for(auto it = closedList.begin(); it!=closedList.end(); it++){
+        delete it->second;
+    }
+    return NO_ROUTE;  
 }
 
 //******************** PointToPointRouter functions ***************************
