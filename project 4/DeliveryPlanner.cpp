@@ -55,7 +55,7 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
         }
         if(r==BAD_COORD||r==NO_ROUTE)return r;
         totalDistance += temp;
-        auto it = route.begin();
+        list<StreetSegment>::iterator it = route.begin();
         while (it!=route.end()) {
             /*
              Generate delivery command for each street
@@ -98,7 +98,9 @@ DeliveryResult DeliveryPlannerImpl::generateDeliveryPlan(
             commands.push_back(dc);
             if(it==route.end())break;
             // check whether to turn
-            double turn = angleBetween2Lines(*it, start);
+            list<StreetSegment>::iterator it2 = it;
+            it2--;
+            double turn = angleBetween2Lines(*(it2), *it);
             if(turn>=1 && turn <=180){
                 dc.initAsTurnCommand("left", it->name);
                 commands.push_back(dc);
